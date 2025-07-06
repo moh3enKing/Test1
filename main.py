@@ -8,6 +8,11 @@ from datetime import datetime, timedelta
 import asyncio
 import json
 from urllib.parse import urlparse
+import logging
+
+# Enable logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Configuration
 TOKEN = os.getenv("TOKEN", "8089258024:AAFx2ieX_ii_TrI60wNRRY7VaLHEdD3-BP0")
@@ -82,7 +87,8 @@ async def check_channel_membership(context: ContextTypes.DEFAULT_TYPE, user_id: 
     try:
         member = await context.bot.get_chat_member(CHANNEL_ID, user_id)
         return member.status in ["member", "administrator", "creator"]
-    except telegram.error.TelegramError:
+    except telegram.error.TelegramError as e:
+        logger.error(f"Error checking channel membership: {e}")
         return False
 
 async def check_join_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -267,6 +273,7 @@ async def handle_instagram(update: Update, context: ContextTypes.DEFAULT_TYPE, u
         else:
             await update.message.reply_text("❌ خطا: هیچ رسانه‌ای پیدا نشد!")
     except Exception as e:
+        logger.error(f"Error processing Instagram link: {e}")
         await update.message.reply_text(f"❌ خطا در پردازش لینک اینستاگرام: {str(e)}")
 
 async def handle_spotify(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
@@ -281,6 +288,7 @@ async def handle_spotify(update: Update, context: ContextTypes.DEFAULT_TYPE, url
         else:
             await update.message.reply_text("❌ خطا: هیچ آهنگی پیدا نشد!")
     except Exception as e:
+        logger.error(f"Error processing Spotify link: {e}")
         await update.message.reply_text(f"❌ خطا در پردازش لینک اسپاتیفای: {str(e)}")
 
 async def handle_pinterest(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
@@ -295,6 +303,7 @@ async def handle_pinterest(update: Update, context: ContextTypes.DEFAULT_TYPE, u
         else:
             await update.message.reply_text("❌ خطا: هیچ تصویری پیدا نشد!")
     except Exception as e:
+        logger.error(f"Error processing Pinterest link: {e}")
         await update.message.reply_text(f"❌ خطا در پردازش لینک پینترست: {str(e)}")
 
 async def handle_ai_or_image(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
@@ -305,7 +314,8 @@ async def handle_ai_or_image(update: Update, context: ContextTypes.DEFAULT_TYPE,
             if response.status_code == 200:
                 await update.message.reply_text(response.text)
                 return
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error processing AI service {api}: {e}")
             continue
 
     # If AI fails, try image generation
@@ -320,9 +330,11 @@ async def handle_ai_or_image(update: Update, context: ContextTypes.DEFAULT_TYPE,
         else:
             await update.message.reply_text("❌ خطا: هیچ تصویری تولید نشد!")
     except Exception as e:
+        logger.error(f"Error processing image generation: {e}")
         await update.message.reply_text(f"❌ خطا در پردازش درخواست: {str(e)}")
 
 async def main():
+    # Initialize the application
     app = Application.builder().token(TOKEN).build()
 
     # Handlers
@@ -334,13 +346,32 @@ async def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_handler(CallbackQueryHandler(check_join_callback, pattern="check_join"))
 
-    # Start webhook
-    await app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.getenv("PORT", 8443)),
-        url_path="/",
-        webhook_url=WEBHOOK_URL
-    )
+    # Start webhook with proper event loop handling
+    try:
+        await app.initialize()
+        await app.start()
+        await app.updater.start_webhook(
+            listen="0.0.0.0",
+            port=int(os.getenv("PORT", 8443)),
+            url_path="/",
+            webhook_url=WEBHOOK_URL
+        )
+        logger.info("Webhook started successfully")
+        # Keep the application running
+        await asyncio.Event().wait()
+    except Exception as e:
+        logger.error(f"Error starting webhook: {e}")
+        raise
+    finally:
+        await app.stop()
+        await app.shutdown()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+    except Exception as e:
+        logger.error(f"Error in main loop: {e}")
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.close()
