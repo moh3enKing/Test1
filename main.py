@@ -10,11 +10,11 @@ import json
 from urllib.parse import urlparse
 
 # Configuration
-TOKEN = "8089258024:AAFx2ieX_ii_TrI60wNRRY7VaLHEdD3-BP0"
+TOKEN = os.getenv("TOKEN", "8089258024:AAFx2ieX_ii_TrI60wNRRY7VaLHEdD3-BP0")
 ADMIN_ID = 5637609683
 CHANNEL_ID = "@netgoris"
-MONGODB_URI = "mongodb+srv://mohsenfeizi1386:RIHPhDJPhd9aNJvC@cluster0.ounkvru.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-WEBHOOK_URL = "https://test1-je97.onrender.com/"
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://mohsenfeizi1386:RIHPhDJPhd9aNJvC@cluster0.ounkvru.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://test1-je97.onrender.com/")
 
 # Web services
 AI_SERVICES = [
@@ -322,7 +322,7 @@ async def handle_ai_or_image(update: Update, context: ContextTypes.DEFAULT_TYPE,
     except Exception as e:
         await update.message.reply_text(f"❌ خطا در پردازش درخواست: {str(e)}")
 
-def main():
+async def main():
     app = Application.builder().token(TOKEN).build()
 
     # Handlers
@@ -335,7 +335,7 @@ def main():
     app.add_handler(CallbackQueryHandler(check_join_callback, pattern="check_join"))
 
     # Start webhook
-    app.run_webhook(
+    await app.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", 8443)),
         url_path="/",
@@ -343,4 +343,4 @@ def main():
     )
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
