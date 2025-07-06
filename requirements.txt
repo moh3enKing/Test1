@@ -1,4 +1,3 @@
-pyTelegramBotAPI
-Flask
-pymongo
-requests
+python-telegram-bot==20.7
+pymongo==4.6.1
+requests==2.31.0
