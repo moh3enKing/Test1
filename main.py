@@ -14,7 +14,7 @@ TOKEN = "8089258024:AAFx2ieX_ii_TrI60wNRRY7VaLHEdD3-BP0"
 ADMIN_ID = 5637609683
 CHANNEL_ID = "@netgoris"
 MONGODB_URI = "mongodb+srv://mohsenfeizi1386:RIHPhDJPhd9aNJvC@cluster0.ounkvru.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-WEBHOOK_URL = "https://test1-je97.onrender.com/"  # Updated with your Render URL
+WEBHOOK_URL = "https://test1-je97.onrender.com/"
 
 # Web services
 AI_SERVICES = [
@@ -97,7 +97,7 @@ async def check_join_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
             "ممنون که جوین کردی! 😊 حالا می‌تونی از امکانات ربات استفاده کنی.\n"
             "برای اطلاعات بیشتر، دکمه راهنما رو بزن."
         )
-        await query.message.delete()  # Delete join message
+        await query.message.delete()
         await context.bot.send_message(
             chat_id=user_id,
             text=welcome_text,
@@ -125,7 +125,7 @@ async def guide(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "- پینترست: لینک پین\n"
         "- ساخت تصویر: متن دلخواه (مثال: `flower`)\n\n"
         "⚠️ **اخطارها و قوانین**:\n"
-        "1. فقط لینک‌های معتبر از Kftهای بالا ارسال کن. لینک‌های نامعتبر باعث خطا می‌شن.\n"
+        "1. فقط لینک‌های معتبر از سرویس‌های بالا ارسال کن. لینک‌های نامعتبر باعث خطا می‌شن.\n"
         "2. اسپم نکن! حداکثر ۴ پیام در ۲ دقیقه می‌تونی بفرستی.\n"
         "3. در صورت تخلف، ممکنه از ربات بن بشی.\n"
         "4. برای هر مشکلی، از دکمه پشتیبانی استفاده کن.\n\n"
