@@ -1,4 +1,1 @@
-pyTelegramBotAPI
-Flask
-pymongo
-requests
+pip install python-telegram-bot
